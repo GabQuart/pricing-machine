@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PriceLab · Marketplaces</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#0e0f11; --surf:#16181c; --surf2:#1e2027; --surf3:#242731;
+  --bd:#2a2d35; --bd2:#363a45; --bd3:#444958;
+  --tx:#eceef2; --tx2:#b0b5c4; --mu:#6b7080;
+  --acc:#f5a623; --shp:#ff6633; --ml:#f5a623; --shn:#c9a0dc;
+  --grn:#4ade80; --red:#f87171; --amb:#fbbf24;
+  --mono:'DM Mono',monospace; --sans:'DM Sans',sans-serif; --disp:'Syne',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--tx);font-family:var(--sans);font-size:14px;display:flex;flex-direction:column}
+body::before{content:'';position:fixed;inset:0;
+  background-image:linear-gradient(var(--bd) 1px,transparent 1px),linear-gradient(90deg,var(--bd) 1px,transparent 1px);
+  background-size:40px 40px;opacity:.18;pointer-events:none;z-index:0}
+
+header{position:relative;z-index:10;padding:14px 28px;border-bottom:1px solid var(--bd);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+  background:rgba(14,15,17,.9);backdrop-filter:blur(14px)}
+.logo{font-family:var(--disp);font-weight:800;font-size:17px;letter-spacing:-.5px}
+.logo em{color:var(--acc);font-style:normal}
+.hchips{display:flex;gap:8px;align-items:center}
+.chip{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;
+  font-size:10px;font-family:var(--mono);border:1px solid;letter-spacing:.3px}
+.c-shp{border-color:var(--shp);color:var(--shp);background:rgba(255,102,51,.1)}
+.c-ml {border-color:var(--ml); color:var(--ml); background:rgba(245,166,35,.1)}
+.c-shn{border-color:var(--shn);color:var(--shn);background:rgba(201,160,220,.1)}
+.bver{font-family:var(--mono);font-size:10px;background:var(--surf2);border:1px solid var(--bd2);
+  color:var(--mu);padding:3px 8px;border-radius:4px}
+
+.tabs{position:relative;z-index:10;display:flex;border-bottom:1px solid var(--bd);
+  padding:0 28px;flex-shrink:0;background:rgba(14,15,17,.7)}
+.tab{padding:12px 18px;font-family:var(--disp);font-weight:600;font-size:12px;
+  cursor:pointer;color:var(--mu);border-bottom:2px solid transparent;
+  transition:all .2s;letter-spacing:.3px;display:flex;align-items:center;gap:6px}
+.tab:hover{color:var(--tx)}
+.tab.active{color:var(--tx);border-bottom-color:var(--tc,var(--acc))}
+.tab[data-tab=shopee]{--tc:var(--shp)}
+.tab[data-tab=ml]{--tc:var(--ml)}
+.tab[data-tab=shein]{--tc:var(--shn)}
+.tdot{width:6px;height:6px;border-radius:50%;background:var(--tc,var(--acc))}
+
+.main{position:relative;z-index:5;display:flex;flex:1;overflow:hidden}
+.panel{display:none;width:100%;height:100%}
+.panel.active{display:flex}
+
+.form-side{width:360px;flex-shrink:0;padding:18px 20px;border-right:1px solid var(--bd);overflow-y:auto}
+.result-side{flex:1;padding:20px 24px;overflow-y:auto;display:flex;flex-direction:column;gap:16px}
+
+.sec{margin-bottom:18px}
+.sec-title{font-family:var(--mono);font-size:10px;color:var(--mu);text-transform:uppercase;
+  letter-spacing:1.5px;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.sec-title::after{content:'';flex:1;height:1px;background:var(--bd)}
+
+.field{margin-bottom:9px}
+.lbl{display:block;margin-bottom:4px;font-size:11px;color:var(--mu);font-weight:500}
+input,select{width:100%;padding:8px 11px;background:var(--surf);border:1px solid var(--bd2);
+  border-radius:6px;color:var(--tx);font-family:var(--mono);font-size:12px;
+  transition:border-color .15s;appearance:none}
+input:focus,select:focus{outline:none;border-color:var(--acc)}
+input::placeholder{color:var(--mu)}
+input[readonly]{opacity:.55;cursor:not-allowed}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24'%3E%3Cpath fill='%236b7080' d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 9px center;padding-right:28px;cursor:pointer}
+.ipfx{position:relative}
+.ipfx>span{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--mu);font-family:var(--mono);font-size:11px;pointer-events:none}
+.ipfx input{padding-left:24px}
+.ipsfx{position:relative}
+.ipsfx>span{position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--mu);font-family:var(--mono);font-size:11px;pointer-events:none}
+.ipsfx input{padding-right:26px}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.r3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+
+.ctag{margin:4px 0 8px;padding:8px 12px;background:var(--surf2);border:1px solid var(--bd2);
+  border-radius:6px;display:flex;justify-content:space-between;align-items:center}
+.ctag-lbl{font-size:10px;color:var(--mu);font-family:var(--mono)}
+.ctag-val{font-family:var(--mono);font-size:13px;font-weight:500;color:var(--tx2)}
+
+.mgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.mcard{background:var(--surf);border:1px solid var(--bd);border-radius:10px;padding:13px 15px}
+.mcard.hl {border-color:var(--acc);background:rgba(245,166,35,.06)}
+.mcard.pos{border-color:var(--grn);background:rgba(74,222,128,.05)}
+.mcard.neg{border-color:var(--red);background:rgba(248,113,113,.05)}
+.mcard.wrn{border-color:var(--amb);background:rgba(251,191,36,.05)}
+.mlbl{font-size:10px;color:var(--mu);margin-bottom:5px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.8px}
+.mval{font-family:var(--mono);font-size:20px;font-weight:500;line-height:1}
+.msub{font-size:10px;color:var(--mu);margin-top:3px;font-family:var(--mono)}
+
+.thl{border-radius:10px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;
+  border:1px solid var(--acc);background:rgba(245,166,35,.08)}
+.thl-price{font-family:var(--mono);font-size:26px;font-weight:500;color:var(--acc)}
+
+.mtable{background:var(--surf);border:1px solid var(--bd);border-radius:10px;overflow:hidden}
+.mthdr,.mrow{display:grid;grid-template-columns:72px 1fr 108px 105px 92px;gap:4px;padding:10px 16px}
+.mthdr{border-bottom:1px solid var(--bd);font-family:var(--mono);font-size:10px;color:var(--mu);
+  text-transform:uppercase;letter-spacing:1px}
+.mrow{border-bottom:1px solid var(--bd);align-items:center;transition:background .1s}
+.mrow:last-child{border-bottom:none}
+.mrow:hover{background:var(--surf2)}
+.mrow.active{background:rgba(245,166,35,.07)}
+.mt-a{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--acc)}
+.mt-p{font-family:var(--mono);font-size:13px;font-weight:500}
+.mt-m{font-family:var(--mono);font-size:11px}
+.mt-l{font-family:var(--mono);font-size:11px;color:var(--mu)}
+.st{font-size:10px;padding:2px 7px;border-radius:20px;font-family:var(--mono);white-space:nowrap}
+.st-ok{background:rgba(74,222,128,.14);color:var(--grn)}
+.st-wn{background:rgba(251,191,36,.14);color:var(--amb)}
+.st-bd{background:rgba(248,113,113,.14);color:var(--red)}
+.mfoot{padding:8px 16px;border-top:1px solid var(--bd);background:var(--surf2);
+  font-family:var(--mono);font-size:10px;color:var(--mu);display:flex;justify-content:space-between}
+
+.bkd{background:var(--surf);border:1px solid var(--bd);border-radius:10px;padding:15px}
+.bkd-t{font-family:var(--mono);font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:1px;margin-bottom:11px}
+.brow{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--bd)}
+.brow:last-child{border-bottom:none}
+.bl{font-size:11px;color:var(--mu)}
+.bv{font-family:var(--mono);font-size:11px}
+.bv.n{color:var(--red)}.bv.p{color:var(--grn)}
+.btot{font-weight:500;color:var(--tx)!important;font-size:13px!important}
+
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;
+  height:100%;gap:10px;text-align:center;padding:48px}
+.eico{font-size:42px;opacity:.28}
+.etxt{font-family:var(--disp);font-size:16px;font-weight:700;color:var(--bd2)}
+.esub{font-size:12px;color:var(--mu);max-width:250px;line-height:1.55}
+
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:3px}
+::-webkit-scrollbar-track{background:transparent}
+@keyframes fu{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.result-side>*{animation:fu .2s ease both}
+.result-side>*:nth-child(2){animation-delay:.04s}
+.result-side>*:nth-child(3){animation-delay:.08s}
+.result-side>*:nth-child(4){animation-delay:.12s}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">PRICE<em>LAB</em> <span style="color:var(--mu);font-weight:300;font-size:13px">/ Marketplaces</span></div>
+  <div class="hchips">
+    <span class="chip c-shp">Shopee</span>
+    <span class="chip c-ml">Mercado Livre</span>
+    <span class="chip c-shn">Shein</span>
+    <span class="bver">v8 · 2026</span>
+  </div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" data-tab="shopee" onclick="switchTab('shopee')"><span class="tdot"></span>Shopee</div>
+  <div class="tab" data-tab="ml" onclick="switchTab('ml')"><span class="tdot"></span>Mercado Livre</div>
+  <div class="tab" data-tab="shein" onclick="switchTab('shein')"><span class="tdot"></span>Shein</div>
+</div>
+
+<div class="main">
+
+<!-- ════════ SHOPEE ════════ -->
+<div class="panel active" id="panel-shopee">
+  <div class="form-side">
+    <div class="sec">
+      <div class="sec-title">Produto</div>
+      <div class="field"><label class="lbl">Nome</label>
+        <input type="text" id="shp-nome" placeholder="Ex: Camisa Infantil Luxo" oninput="calcShopee()">
+      </div>
+    </div>
+    <div class="sec">
+      <div class="sec-title">Custos</div>
+      <div class="r2">
+        <div class="field"><label class="lbl">Custo produto</label>
+          <div class="ipfx"><span>R$</span><input type="number" id="shp-custo" placeholder="0,00" step="0.01" oninput="calcShopee()"></div>
+        </div>
+        <div class="field"><label class="lbl">Custo embalagem</label>
+          <div class="ipfx"><span>R$</span><input type="number" id="shp-embal" placeholder="0,00" step="0.01" oninput="calcShopee()"></div>
+        </div>
+      </div>
+      <div id="shp-ctag" class="ctag" style="display:none">
+        <span class="ctag-lbl">Custo total (produto + embalagem)</span>
+        <span class="ctag-val" id="shp-ctv"></span>
+      </div>
+    </div>
+    <div class="sec">
+      <div class="sec-title">DE → PARA</div>
+      <div class="r2">
+        <div class="field"><label class="lbl">Preço DE</label>
+          <div class="ipfx"><span>R$</span><input type="number" id="shp-de" placeholder="0,00" step="0.01" oninput="calcShopee()"></div>
+        </div>
+        <div class="field"><label class="lbl">Desconto</label>
+          <div class="ipsfx"><input type="number" id="shp-desc" placeholder="0" min="0" max="99" step="1" oninput="calcShopee()"><span>%</span></div>
+        </div>
+      </div>
+      <div class="field"><label class="lbl">PARA calculado</label>
+        <div class="ipfx"><span>R$</span><input type="number" id="shp-para" placeholder="—" readonly></div>
+      </div>
+    </div>
+    <div class="sec">
+      <div class="sec-title">Tributação & Estratégia</div>
+      <div class="r2">
+        <div class="field"><label class="lbl">Imposto NFe</label>
+          <div class="ipsfx"><input type="number" id="shp-imp" value="8" step="0.1" oninput="calcShopee()"><span>%</span></div>
+        </div>
+        <div class="field"><label class="lbl">Cupom</label>
+          <div class="ipsfx"><input type="number" id="shp-cupom" placeholder="0" step="0.1" oninput="calcShopee()"><span>%</span></div>
+        </div>
+      </div>
+      <div class="field"><label class="lbl">Margem alvo</label>
+        <select id="shp-estrat" onchange="calcShopee()">
+          <option value="">— sem destaque —</option>
+          <option value="0.35">35% de contribuição</option>
+          <option value="0.30">30% de contribuição</option>
+          <option value="0.23">23% de contribuição</option>
+          <option value="0.17">17% de contribuição</option>
+          <option value="0.10">10% de contribuição</option>
+          <option value="0.00">0% — equilíbrio</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="result-side" id="shp-result">
+    <div class="empty"><div class="eico">🛍</div><div class="etxt">Aguardando dados</div>
+    <div class="esub">Preencha o custo e o imposto NFe para ver os preços mínimos automaticamente</div></div>
+  </div>
+</div>
+
+<!-- ════════ ML ════════ -->
+<div class="panel" id="panel-ml">
+  <div class="form-side">
+    <div class="sec">
+      <div class="sec-title">Produto</div>
+      <div class="field"><label class="lbl">Nome / Título</label>
+        <input type="text" id="ml-nome" placeholder="Ex: Vestido Longo Juvenil" oninput="calcML()">
+      </div>
+    </div>
+    <div class="sec">
+      <div class="sec-title">Custos</div>
+      <div class="r2">
+        <div class="field"><label class="lbl">Custo produto</label>
+          <div class="ipfx"><span>R$</span><input type="number" id="ml-custo" placeholder="0,00" step="0.01" oninput="calcML()"></div>
+        </div>
+        <div class="field"><label class="lbl">Custo embalagem</label>
+          <div class="ipfx"><span>R$</span><input type="number" id="ml-embal" placeholder="0,00" step="0.01" oninput="calcML()"></div>
+        </div>
+      </div>
+      <div id="ml-ctag" class="ctag" style="display:none">
+        <span class="ctag-lbl">Custo total (produto + embalagem)</span>
+        <span class="ctag-val" id="ml-ctv"></span>
+      </div>
+    </div>
+    <div class="sec">
+      <div class="sec-title">DE → PARA</div>
+      <div class="r2">
+        <div class="field"><label class="lbl">Preço DE</label>
+          <div class="ipfx"><span>R$</span><input type="number" id="ml-de" placeholder="0,00" step="0.01" oninput="calcML()"></div>
+        </div>
+        <div class="field"><label class="lbl">Desconto</label>
+          <div class="ipsfx"><input type="number" id="ml-desc" placeholder="0" min="0" max="99" step="1" oninput="calcML()"><span>%</span></div>
+        </div>
+      </div>
+      <div class="field"><label class="lbl">PARA calculado</label>
+        <div class="ipfx"><span>R$</span><input type="number" id="ml-para" placeholder="—" readonly></div>
+      </div>
+    </div>
+    <div class="sec">
+      <div class="sec-title">Logística & Categoria</div>
+      <div class="field"><label class="lbl">Peso</label>
+        <select id="ml-peso" onchange="calcML()">
+          <option value="0">Até 0,3 kg</option><option value="1">0,3 a 0,5 kg</option>
+          <option value="2">0,5 a 1 kg</option><option value="3">1 a 1,5 kg</option>
+          <option value="4">1,5 a 2 kg</option><option value="5">2 a 3 kg</option>
+          <option value="6">3 a 4 kg</option><option value="7">4 a 5 kg</option>
+          <option value="8">5 a 6 kg</option><option value="9">6 a 7 kg</option>
+          <option value="10">7 a 8 kg</option><option value="11">8 a 9 kg</option>
+        </select>
+      </div>
+      <div class="r2">
+        <div class="field"><label class="lbl">Taxa categoria</label>
+          <select id="ml-taxa" onchange="calcML()">
+            <option value="0.11">11,0%</option><option value="0.115">11,5%</option>
+            <option value="0.12">12,0%</option><option value="0.125">12,5%</option>
+            <option value="0.13">13,0%</option><option value="0.14">14,0%</option>
+            <option value="0.15">15,0%</option><option value="0.16">16,0%</option>
+            <option value="0.17">17,0%</option><option value="0.18">18,0%</option>
+            <option value="0.19" selected>19,0%</option>
+          </select>
+        </div>
+        <div class="field"><label class="lbl">Imposto NFe</label>
+          <div class="ipsfx"><input type="number" id="ml-imp" value="8" step="0.1" oninput="calcML()"><span>%</span></div>
+        </div>
+      </div>
+      <div class="field"><label class="lbl">Margem alvo</label>
+        <select id="ml-estrat" onchange="calcML()">
+          <option value="">— sem destaque —</option>
+          <option value="0.35">35%</option><option value="0.30">30%</option>
+          <option value="0.23">23%</option><option value="0.17">17%</option>
+          <option value="0.10">10%</option><option value="0.00">0% — equilíbrio</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="result-side" id="ml-result">
+    <div class="empty"><div class="eico">🛒</div><div class="etxt">Aguardando dados</div>
+    <div class="esub">Preencha o custo e o imposto NFe para ver os preços mínimos automaticamente</div></div>
+  </div>
+</div>
+
+<!-- ════════ SHEIN ════════ -->
+<div class="panel" id="panel-shein">
+  <div class="form-side">
+    <div class="sec">
+      <div class="sec-title">Produto</div>
+      <div class="field"><label class="lbl">Nome</label>
+        <input type="text" id="shn-nome" placeholder="Ex: Conjunto Infantil" oninput="calcShein()">
+      </div>
+    </div>
+    <div class="sec">
+      <div class="sec-title">Custos</div>
+      <div class="r2">
+        <div class="field"><label class="lbl">Custo produto</label>
+          <div class="ipfx"><span>R$</span><input type="number" id="shn-custo" placeholder="0,00" step="0.01" oninput="calcShein()"></div>
+        </div>
+        <div class="field"><label class="lbl">Custo embalagem</label>
+          <div class="ipfx"><span>R$</span><input type="number" id="shn-embal" placeholder="0,00" step="0.01" oninput="calcShein()"></div>
+        </div>
+      </div>
+      <div id="shn-ctag" class="ctag" style="display:none">
+        <span class="ctag-lbl">Custo total (produto + embalagem)</span>
+        <span class="ctag-val" id="shn-ctv"></span>
+      </div>
+    </div>
+    <div class="sec">
+      <div class="sec-title">DE → PARA</div>
+      <div class="r2">
+        <div class="field"><label class="lbl">Preço DE</label>
+          <div class="ipfx"><span>R$</span><input type="number" id="shn-de" placeholder="0,00" step="0.01" oninput="calcShein()"></div>
+        </div>
+        <div class="field"><label class="lbl">Desconto</label>
+          <div class="ipsfx"><input type="number" id="shn-desc" placeholder="0" min="0" max="99" step="1" oninput="calcShein()"><span>%</span></div>
+        </div>
+      </div>
+      <div class="field"><label class="lbl">PARA calculado</label>
+        <div class="ipfx"><span>R$</span><input type="number" id="shn-para" placeholder="—" readonly></div>
+      </div>
+    </div>
+    <div class="sec">
+      <div class="sec-title">Configurações Shein</div>
+      <div class="r3">
+        <div class="field"><label class="lbl">Comissão</label>
+          <div class="ipsfx"><input type="number" id="shn-com" value="20" step="0.1" oninput="calcShein()"><span>%</span></div>
+        </div>
+        <div class="field"><label class="lbl">Taxa fixa</label>
+          <div class="ipfx"><span>R$</span><input type="number" id="shn-fx" value="5" step="0.5" oninput="calcShein()"></div>
+        </div>
+        <div class="field"><label class="lbl">Imposto NFe</label>
+          <div class="ipsfx"><input type="number" id="shn-imp" value="8" step="0.1" oninput="calcShein()"><span>%</span></div>
+        </div>
+      </div>
+      <div class="r2">
+        <div class="field"><label class="lbl">Cupom</label>
+          <div class="ipsfx"><input type="number" id="shn-cupom" placeholder="0" step="0.1" oninput="calcShein()"><span>%</span></div>
+        </div>
+        <div class="field"><label class="lbl">Margem alvo</label>
+          <select id="shn-estrat" onchange="calcShein()">
+            <option value="">— sem destaque —</option>
+            <option value="0.35">35%</option><option value="0.30">30%</option>
+            <option value="0.23">23%</option><option value="0.17">17%</option>
+            <option value="0.10">10%</option><option value="0.00">0%</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="result-side" id="shn-result">
+    <div class="empty"><div class="eico">👗</div><div class="etxt">Aguardando dados</div>
+    <div class="esub">Preencha o custo e o imposto NFe para ver os preços mínimos automaticamente</div></div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<script>
+// ── DATA ─────────────────────────────────────────────
+const FAIXAS = [
+  {ate:79.99,  taxa:.20, fixo:4 },
+  {ate:99.99,  taxa:.14, fixo:16},
+  {ate:199.99, taxa:.14, fixo:20},
+  {ate:499.99, taxa:.14, fixo:26},
+  {ate:999999, taxa:.14, fixo:28},
+];
+
+const FL = [18.99,48.99,78.99,99.99,119.99,149.99,199.99,Infinity];
+// FRETE_RAW[faixaPrecoIdx=0..7][pesoIdx=0..11]
+const FR = [
+  [5.65,5.95,6.05,6.15,6.25,6.35,6.45,6.55,6.65,6.75,6.85,6.95],
+  [6.55,6.65,6.75,6.85,6.95,7.95,8.15,8.35,8.55,8.75,8.95,9.15],
+  [7.75,7.85,7.95,8.05,8.15,8.55,8.95,9.75,9.95,10.15,10.35,10.55],
+  [12.35,13.25,13.85,14.15,14.45,15.75,17.05,18.45,25.45,27.05,28.85,29.65],
+  [14.35,15.45,16.15,16.45,16.85,18.35,19.85,21.55,28.55,31.05,33.65,34.55],
+  [16.45,17.65,18.45,18.85,19.25,21.05,22.65,24.65,32.65,36.05,38.45,39.55],
+  [18.45,19.85,20.75,21.15,21.65,23.65,25.55,27.75,35.75,40.05,43.25,44.45],
+  [20.95,22.55,23.65,24.65,24.65,26.25,28.35,30.75,39.75,44.05,48.05,49.35],
+];
+// transpõe para FRETE[pesoIdx][faixaIdx]
+const FRETE = Array.from({length:12},(_,p)=>Array.from({length:8},(_,f)=>FR[f][p]));
+const MARGENS = [.35,.30,.23,.17,.10,.00];
+const PESOS = ['Até 0,3 kg','0,3–0,5 kg','0,5–1 kg','1–1,5 kg','1,5–2 kg','2–3 kg','3–4 kg','4–5 kg','5–6 kg','6–7 kg','7–8 kg','8–9 kg'];
+
+// ── HELPERS ──────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const r2 = v => Math.round(v*100)/100;
+const fmt = v => (!isFinite(v)||isNaN(v)||v==null) ? '—' : 'R$ '+r2(v).toFixed(2).replace('.',',');
+const pct = v => (!isFinite(v)||isNaN(v)||v==null) ? '—' : (v*100).toFixed(1).replace('.',',')+' %';
+const cor = v => v>=.25?'var(--grn)':v>=.12?'var(--amb)':'var(--red)';
+const stC = v => v>=.25?'st-ok':v>=.12?'st-wn':'st-bd';
+const stL = v => v>=.25?'✓ Saudável':v>=.12?'~ Atenção':'✗ Crítico';
+const cC  = v => v>=.25?'pos':v>=.12?'wrn':'neg';
+
+function fxSHP(p){ return FAIXAS.find(f=>p<=f.ate)||FAIXAS.at(-1); }
+function fiSHP(p){ return FAIXAS.findIndex(f=>p<=f.ate)+1; }
+
+function freteML(pi,pr){
+  const fi=FL.findIndex(l=>pr<=l); return FRETE[pi][fi===-1?7:fi];
+}
+function fiML(pr){ const fi=FL.findIndex(l=>pr<=l); return fi===-1?8:fi+1; }
+
+function minSHP(ct,imp,m){
+  for(let i=0;i<FAIXAS.length;i++){
+    const f=FAIXAS[i];
+    const p=(ct+f.fixo)/(1-f.taxa-imp-m);
+    if(p<=f.ate) return r2(p);
+  }
+  const f=FAIXAS.at(-1); return r2((ct+f.fixo)/(1-f.taxa-imp-m));
+}
+
+function minML(ct,taxa,imp,pi,m){
+  for(let i=0;i<8;i++){
+    const fr=FRETE[pi][i];
+    const p=(ct+fr)/(1-taxa-imp-m);
+    const prev=i===0?0:FL[i-1];
+    if(p>prev&&p<=FL[i]) return r2(p);
+  }
+  return r2((ct+FRETE[pi][7])/(1-taxa-imp-m));
+}
+
+function minSHN(ct,com,fx,imp,m){
+  return r2((ct+fx)/(1-com-imp-m));
+}
+
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+  document.querySelector(`[data-tab="${t}"]`).classList.add('active');
+  $(`panel-${t}`).classList.add('active');
+}
+
+function showCtag(id,val){
+  const tag=$(id+'-ctag'), v=$(id+'-ctv');
+  if(val>0){ tag.style.display='flex'; v.textContent=fmt(val); }
+  else tag.style.display='none';
+}
+
+function rowsHtml(rows, estrat){
+  return rows.map(r=>`
+  <div class="mrow${estrat===String(r.m)?' active':''}">
+    <span class="mt-a">${pct(r.m)}</span>
+    <span class="mt-p">${fmt(r.p)}</span>
+    <span class="mt-m" style="color:${cor(r.mR)}">${pct(r.mR)}</span>
+    <span class="mt-l">${fmt(r.lucro)}</span>
+    <span class="st ${stC(r.mR)}">${stL(r.mR)}</span>
+  </div>`).join('');
+}
+
+// ── SHOPEE ───────────────────────────────────────────
+function calcShopee(){
+  const custo = parseFloat($('shp-custo').value)||0;
+  const embal = parseFloat($('shp-embal').value)||0;
+  const ct    = r2(custo+embal);
+  const de    = parseFloat($('shp-de').value)||0;
+  const desc  = parseFloat($('shp-desc').value)||0;
+  const imp   = (parseFloat($('shp-imp').value)||0)/100;
+  const cupom = (parseFloat($('shp-cupom').value)||0)/100;
+  const estrat= $('shp-estrat').value;
+
+  showCtag('shp', ct);
+
+  const para  = de>0&&desc>0 ? r2(de*(1-desc/100)) : de;
+  $('shp-para').value = para>0 ? para.toFixed(2) : '';
+
+  // Calcula assim que tiver custo E imposto — não precisa do DE/PARA
+  if(!ct||!imp){ empty('shp-result','🛍'); return; }
+
+  const pr   = cupom>0&&para>0 ? r2(para*(1-cupom)) : (para||0);
+  const fx   = fxSHP(pr||1);
+  const fn   = fiSHP(pr||1);
+
+  // Margem atual (só exibe se tiver PARA)
+  const lucroR = pr>0 ? pr-pr*(fx.taxa+imp)-fx.fixo-ct : null;
+  const margR  = pr>0 && lucroR!==null ? lucroR/pr : null;
+
+  // Destaque margem alvo
+  let alvoHtml='';
+  if(estrat){
+    const m=parseFloat(estrat);
+    const pa=minSHP(ct,imp,m);
+    const fa=fxSHP(pa), fn2=fiSHP(pa);
+    const la=pa-pa*(fa.taxa+imp)-fa.fixo-ct;
+    alvoHtml=`<div class="thl">
+      <div>
+        <div class="mlbl" style="margin-bottom:4px">Preço mínimo — ${pct(m)} de margem</div>
+        <div class="thl-price">${fmt(pa)}</div>
+        <div class="msub" style="margin-top:5px">Lucro: ${fmt(la)} · Faixa ${fn2} · Comissão ${pct(fa.taxa)} + R$ ${fa.fixo}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="mlbl">Faixa Shopee</div>
+        <div style="font-family:var(--mono);font-size:18px;color:var(--acc)">F${fn2}</div>
+      </div>
+    </div>`;
+  }
+
+  const rows=MARGENS.map(m=>{
+    const p=minSHP(ct,imp,m), f=fxSHP(p);
+    const lucro=p-p*(f.taxa+imp)-f.fixo-ct;
+    return {m,p,lucro,mR:lucro/p};
+  });
+
+  $('shp-result').innerHTML=`
+  <div style="display:flex;align-items:center;justify-content:space-between">
+    <span style="font-family:var(--disp);font-size:15px;font-weight:700">${$('shp-nome').value||'Produto'}</span>
+    <span class="chip c-shp">Shopee${pr>0?' · F'+fn:''}</span>
+  </div>
+  <div class="mgrid">
+    <div class="mcard hl">
+      <div class="mlbl">Preço atual (PARA)</div>
+      <div class="mval" style="color:var(--shp)">${pr>0?fmt(pr):'—'}</div>
+      <div class="msub">DE: ${de>0?fmt(de):'—'}${desc>0?' · Desc: '+desc+'%':''}${cupom>0?' · Cupom: '+pct(cupom):''}</div>
+    </div>
+    <div class="mcard ${margR!==null?cC(margR):''}">
+      <div class="mlbl">Margem atual</div>
+      <div class="mval" style="color:${margR!==null?cor(margR):'var(--mu)'}">${margR!==null?pct(margR):'—'}</div>
+      <div class="msub">Lucro: ${lucroR!==null?fmt(lucroR):'—'}</div>
+    </div>
+    <div class="mcard">
+      <div class="mlbl">Custo total</div>
+      <div class="mval">${fmt(ct)}</div>
+      <div class="msub">Prod: ${fmt(custo)} · Embal: ${fmt(embal||0)}</div>
+    </div>
+  </div>
+  ${alvoHtml}
+  <div class="mtable">
+    <div class="mthdr"><span>Margem alvo</span><span>Preço mínimo</span><span>Margem real</span><span>Lucro</span><span>Status</span></div>
+    ${rowsHtml(rows,estrat)}
+    <div class="mfoot"><span>Custo total: ${fmt(ct)} · NFe: ${pct(imp)}</span><span>${pr>0?'Faixa atual: F'+fn+' · '+pct(fx.taxa)+' + R$ '+fx.fixo:'Insira o preço DE para ver a faixa atual'}</span></div>
+  </div>
+  ${pr>0?`<div class="bkd">
+    <div class="bkd-t">Decomposição — PARA ${fmt(pr)}</div>
+    <div class="brow"><span class="bl">Receita bruta</span><span class="bv p">+ ${fmt(pr)}</span></div>
+    <div class="brow"><span class="bl">Custo produto</span><span class="bv n">− ${fmt(custo)}</span></div>
+    ${embal>0?`<div class="brow"><span class="bl">Custo embalagem</span><span class="bv n">− ${fmt(embal)}</span></div>`:''}
+    <div class="brow"><span class="bl">Comissão Shopee (${pct(fx.taxa)})</span><span class="bv n">− ${fmt(pr*fx.taxa)}</span></div>
+    <div class="brow"><span class="bl">Taxa fixa Faixa ${fn}</span><span class="bv n">− R$ ${fx.fixo},00</span></div>
+    <div class="brow"><span class="bl">Imposto NFe (${pct(imp)})</span><span class="bv n">− ${fmt(pr*imp)}</span></div>
+    ${cupom>0?`<div class="brow"><span class="bl">Cupom (${pct(cupom)})</span><span class="bv n">− ${fmt(para*cupom)}</span></div>`:''}
+    <div class="brow" style="margin-top:4px;padding-top:8px;border-top:1px solid var(--bd2)">
+      <span class="bl btot">Lucro líquido</span><span class="bv btot ${lucroR>=0?'p':'n'}">${fmt(lucroR)}</span>
+    </div>
+  </div>`:''}`;
+}
+
+// ── MERCADO LIVRE ────────────────────────────────────
+function calcML(){
+  const custo = parseFloat($('ml-custo').value)||0;
+  const embal = parseFloat($('ml-embal').value)||0;
+  const ct    = r2(custo+embal);
+  const de    = parseFloat($('ml-de').value)||0;
+  const desc  = parseFloat($('ml-desc').value)||0;
+  const imp   = (parseFloat($('ml-imp').value)||0)/100;
+  const taxa  = parseFloat($('ml-taxa').value)||0;
+  const pi    = parseInt($('ml-peso').value)||0;
+  const estrat= $('ml-estrat').value;
+
+  showCtag('ml', ct);
+
+  const para = de>0&&desc>0 ? r2(de*(1-desc/100)) : de;
+  $('ml-para').value = para>0 ? para.toFixed(2) : '';
+
+  if(!ct||!imp||!taxa){ empty('ml-result','🛒'); return; }
+
+  const pr   = para||0;
+  const fr   = pr>0 ? freteML(pi,pr) : null;
+  const fn   = pr>0 ? fiML(pr) : null;
+
+  const lucroR = pr>0 && fr!==null ? pr-pr*(taxa+imp)-fr-ct : null;
+  const margR  = pr>0 && lucroR!==null ? lucroR/pr : null;
+
+  let alvoHtml='';
+  if(estrat){
+    const m=parseFloat(estrat);
+    const pa=minML(ct,taxa,imp,pi,m);
+    const fra=freteML(pi,pa), fna=fiML(pa);
+    const la=pa-pa*(taxa+imp)-fra-ct;
+    alvoHtml=`<div class="thl">
+      <div>
+        <div class="mlbl" style="margin-bottom:4px">Preço mínimo — ${pct(m)} de margem</div>
+        <div class="thl-price">${fmt(pa)}</div>
+        <div class="msub" style="margin-top:5px">Lucro: ${fmt(la)} · Frete Faixa ${fna}: ${fmt(fra)}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="mlbl">Frete</div>
+        <div style="font-family:var(--mono);font-size:18px;color:var(--acc)">${fmt(fra)}</div>
+      </div>
+    </div>`;
+  }
+
+  const rows=MARGENS.map(m=>{
+    const p=minML(ct,taxa,imp,pi,m), fra=freteML(pi,p);
+    const lucro=p-p*(taxa+imp)-fra-ct;
+    return {m,p,lucro,mR:lucro/p};
+  });
+
+  $('ml-result').innerHTML=`
+  <div style="display:flex;align-items:center;justify-content:space-between">
+    <span style="font-family:var(--disp);font-size:15px;font-weight:700">${$('ml-nome').value||'Produto'}</span>
+    <span class="chip c-ml">Mercado Livre · ${PESOS[pi]}</span>
+  </div>
+  <div class="mgrid">
+    <div class="mcard hl">
+      <div class="mlbl">Preço atual (PARA)</div>
+      <div class="mval" style="color:var(--ml)">${pr>0?fmt(pr):'—'}</div>
+      <div class="msub">DE: ${de>0?fmt(de):'—'}${desc>0?' · Desc: '+desc+'%':''}</div>
+    </div>
+    <div class="mcard ${margR!==null?cC(margR):''}">
+      <div class="mlbl">Margem atual</div>
+      <div class="mval" style="color:${margR!==null?cor(margR):'var(--mu)'}">${margR!==null?pct(margR):'—'}</div>
+      <div class="msub">Lucro: ${lucroR!==null?fmt(lucroR):'—'}</div>
+    </div>
+    <div class="mcard">
+      <div class="mlbl">Custo total</div>
+      <div class="mval">${fmt(ct)}</div>
+      <div class="msub">Prod: ${fmt(custo)} · Embal: ${fmt(embal||0)}</div>
+    </div>
+  </div>
+  ${alvoHtml}
+  <div class="mtable">
+    <div class="mthdr"><span>Margem alvo</span><span>Preço mínimo</span><span>Margem real</span><span>Lucro</span><span>Status</span></div>
+    ${rowsHtml(rows,estrat)}
+    <div class="mfoot"><span>Custo: ${fmt(ct)} · Categ: ${pct(taxa)} · NFe: ${pct(imp)}</span><span>${fr!==null?'Frete atual (F'+fn+'): '+fmt(fr):'Insira o DE para ver o frete'}</span></div>
+  </div>
+  ${pr>0&&fr!==null?`<div class="bkd">
+    <div class="bkd-t">Decomposição — PARA ${fmt(pr)}</div>
+    <div class="brow"><span class="bl">Receita bruta</span><span class="bv p">+ ${fmt(pr)}</span></div>
+    <div class="brow"><span class="bl">Custo produto</span><span class="bv n">− ${fmt(custo)}</span></div>
+    ${embal>0?`<div class="brow"><span class="bl">Custo embalagem</span><span class="bv n">− ${fmt(embal)}</span></div>`:''}
+    <div class="brow"><span class="bl">Taxa de categoria (${pct(taxa)})</span><span class="bv n">− ${fmt(pr*taxa)}</span></div>
+    <div class="brow"><span class="bl">Frete ML (Faixa ${fn})</span><span class="bv n">− ${fmt(fr)}</span></div>
+    <div class="brow"><span class="bl">Imposto NFe (${pct(imp)})</span><span class="bv n">− ${fmt(pr*imp)}</span></div>
+    <div class="brow" style="margin-top:4px;padding-top:8px;border-top:1px solid var(--bd2)">
+      <span class="bl btot">Lucro líquido</span><span class="bv btot ${lucroR>=0?'p':'n'}">${fmt(lucroR)}</span>
+    </div>
+  </div>`:''}`;
+}
+
+// ── SHEIN ────────────────────────────────────────────
+function calcShein(){
+  const custo = parseFloat($('shn-custo').value)||0;
+  const embal = parseFloat($('shn-embal').value)||0;
+  const ct    = r2(custo+embal);
+  const de    = parseFloat($('shn-de').value)||0;
+  const desc  = parseFloat($('shn-desc').value)||0;
+  const com   = (parseFloat($('shn-com').value)||20)/100;
+  const fx    = parseFloat($('shn-fx').value)||5;
+  const imp   = (parseFloat($('shn-imp').value)||0)/100;
+  const cupom = (parseFloat($('shn-cupom').value)||0)/100;
+  const estrat= $('shn-estrat').value;
+
+  showCtag('shn', ct);
+
+  const para = de>0&&desc>0 ? r2(de*(1-desc/100)) : de;
+  $('shn-para').value = para>0 ? para.toFixed(2) : '';
+
+  if(!ct||!imp){ empty('shn-result','👗'); return; }
+
+  const pr     = cupom>0&&para>0 ? r2(para*(1-cupom)) : (para||0);
+  const comV   = pr>0 ? pr*com : null;
+  const lucroR = pr>0 ? pr - comV - fx - pr*imp - ct : null;
+  const margR  = pr>0 && lucroR!==null ? lucroR/pr : null;
+
+  let alvoHtml='';
+  if(estrat){
+    const m=parseFloat(estrat);
+    const pa=minSHN(ct,com,fx,imp,m);
+    const la=pa-pa*com-fx-pa*imp-ct;
+    alvoHtml=`<div class="thl" style="border-color:var(--shn);background:rgba(201,160,220,.07)">
+      <div>
+        <div class="mlbl" style="margin-bottom:4px">Preço mínimo — ${pct(m)} de margem</div>
+        <div class="thl-price" style="color:var(--shn)">${fmt(pa)}</div>
+        <div class="msub" style="margin-top:5px">Lucro: ${fmt(la)} · Comissão: ${fmt(pa*com)} · Fixo: ${fmt(fx)}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="mlbl">Lucro</div>
+        <div style="font-family:var(--mono);font-size:18px;color:var(--shn)">${fmt(la)}</div>
+      </div>
+    </div>`;
+  }
+
+  const rows=MARGENS.map(m=>{
+    const p=minSHN(ct,com,fx,imp,m);
+    const lucro=p-p*com-fx-p*imp-ct;
+    return {m,p,lucro,mR:lucro/p};
+  });
+
+  $('shn-result').innerHTML=`
+  <div style="display:flex;align-items:center;justify-content:space-between">
+    <span style="font-family:var(--disp);font-size:15px;font-weight:700">${$('shn-nome').value||'Produto'}</span>
+    <span class="chip c-shn">Shein · ${pct(com)} comissão</span>
+  </div>
+  <div class="mgrid">
+    <div class="mcard hl" style="border-color:var(--shn)">
+      <div class="mlbl">Preço atual (PARA${cupom>0?' c/cupom':''})</div>
+      <div class="mval" style="color:var(--shn)">${pr>0?fmt(pr):'—'}</div>
+      <div class="msub">DE: ${de>0?fmt(de):'—'}${desc>0?' · Desc: '+desc+'%':''}${cupom>0?' · Cupom: '+pct(cupom):''}</div>
+    </div>
+    <div class="mcard ${margR!==null?cC(margR):''}">
+      <div class="mlbl">Margem atual</div>
+      <div class="mval" style="color:${margR!==null?cor(margR):'var(--mu)'}">${margR!==null?pct(margR):'—'}</div>
+      <div class="msub">Lucro: ${lucroR!==null?fmt(lucroR):'—'}</div>
+    </div>
+    <div class="mcard">
+      <div class="mlbl">Custo total</div>
+      <div class="mval">${fmt(ct)}</div>
+      <div class="msub">Prod: ${fmt(custo)} · Embal: ${fmt(embal||0)}</div>
+    </div>
+  </div>
+  ${alvoHtml}
+  <div class="mtable">
+    <div class="mthdr"><span>Margem alvo</span><span>Preço mínimo</span><span>Margem real</span><span>Lucro</span><span>Status</span></div>
+    ${rowsHtml(rows,estrat)}
+    <div class="mfoot"><span>Custo: ${fmt(ct)} · Comissão: ${pct(com)} · Fixo: ${fmt(fx)} · NFe: ${pct(imp)}</span></div>
+  </div>
+  ${pr>0?`<div class="bkd">
+    <div class="bkd-t">Decomposição — PARA ${fmt(pr)}</div>
+    <div class="brow"><span class="bl">Receita bruta</span><span class="bv p">+ ${fmt(pr)}</span></div>
+    <div class="brow"><span class="bl">Custo produto</span><span class="bv n">− ${fmt(custo)}</span></div>
+    ${embal>0?`<div class="brow"><span class="bl">Custo embalagem</span><span class="bv n">− ${fmt(embal)}</span></div>`:''}
+    <div class="brow"><span class="bl">Comissão Shein (${pct(com)})</span><span class="bv n">− ${fmt(comV)}</span></div>
+    <div class="brow"><span class="bl">Taxa fixa</span><span class="bv n">− ${fmt(fx)}</span></div>
+    <div class="brow"><span class="bl">Imposto NFe (${pct(imp)})</span><span class="bv n">− ${fmt(pr*imp)}</span></div>
+    ${cupom>0?`<div class="brow"><span class="bl">Cupom (${pct(cupom)})</span><span class="bv n">− ${fmt(para*cupom)}</span></div>`:''}
+    <div class="brow" style="margin-top:4px;padding-top:8px;border-top:1px solid var(--bd2)">
+      <span class="bl btot">Lucro líquido</span><span class="bv btot ${lucroR>=0?'p':'n'}">${fmt(lucroR)}</span>
+    </div>
+  </div>`:''}`;
+}
+
+function empty(id,ico){
+  $(id).innerHTML=`<div class="empty"><div class="eico">${ico}</div>
+    <div class="etxt">Dados insuficientes</div>
+    <div class="esub">Preencha o custo (produto + embalagem) e o imposto NFe para ver os preços mínimos</div></div>`;
+}
+</script>
+</body>
+</html>
